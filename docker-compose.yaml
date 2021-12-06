@@ -1,0 +1,45 @@
+---
+version: "3"
+
+networks:
+  amqp:
+
+services:
+  rmq:
+    container_name: rmq
+    image: rabbitmq:3.9-management
+    volumes:
+      - "./rmq/:/etc/rabbitmq/"
+    ports:
+      # expose for rmq web client
+      - "15672:15672"
+    networks:
+      - amqp 
+
+  p1:
+    container_name: p1
+    depends_on:
+      - rmq
+    build:
+      context: .
+      dockerfile: p1/Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - amqp
+    environment:
+      - RABBITMQ_ADDR=rmq:5672
+  
+  p2:
+    container_name: p2
+    depends_on:
+      - rmq
+    build:
+      context: .
+      dockerfile: p2/Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - amqp
+    environment:
+      - RABBITMQ_ADDR=rmq:5672
